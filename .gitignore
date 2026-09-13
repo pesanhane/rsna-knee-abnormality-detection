@@ -1,0 +1,32 @@
+# Competition data and local datasets
+data/
+datasets/
+*.dcm
+
+# Model weights and checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# Secrets and credentials
+.env
+.env.*
+kaggle.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Generated outputs
+outputs/
+submissions/
