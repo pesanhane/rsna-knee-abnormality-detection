@@ -44,7 +44,7 @@ class KneeMRIDatasetV2(Dataset):
         volume = preprocess_volume(
             volume,
             num_slices=self.num_slices,
-            image_size=self.image_size,
+            size=self.image_size,
         )
 
         volume = torch.from_numpy(volume).float().clamp(0.0, 1.0)
