@@ -26,22 +26,32 @@ def get_slice_position(ds) -> float:
 
 
 def load_dicom_series(series_path):
-    """Load, geometrically sort and stack a DICOM series as [slices, height, width]."""
+    """Load a DICOM series, skipping unreadable slices, and sort geometrically."""
     series_path = Path(series_path)
     slices = []
+    bad_files = []
 
     for path in series_path.glob("*.dcm"):
-        ds = pydicom.dcmread(path)
-        image = ds.pixel_array.astype(np.float32)
+        try:
+            ds = pydicom.dcmread(path)
+            image = ds.pixel_array.astype(np.float32)
 
-        slope = float(getattr(ds, "RescaleSlope", 1.0))
-        intercept = float(getattr(ds, "RescaleIntercept", 0.0))
-        image = image * slope + intercept
+            slope = float(getattr(ds, "RescaleSlope", 1.0))
+            intercept = float(getattr(ds, "RescaleIntercept", 0.0))
+            image = image * slope + intercept
 
-        slices.append((get_slice_position(ds), image))
+            slices.append((get_slice_position(ds), image))
+        except Exception as exc:
+            bad_files.append((str(path), str(exc)))
+            continue
 
     if not slices:
-        raise ValueError(f"No DICOM slices found in {series_path}")
+        raise RuntimeError(f"No valid DICOM slices found in {series_path}")
 
     slices.sort(key=lambda item: item[0])
-    return np.stack([image for _, image in slices], axis=0)
+    volume = np.stack([image for _, image in slices], axis=0)
+
+    if bad_files:
+        print(f"[WARNING] {len(bad_files)} DICOM(s) ignored in {series_path}")
+
+    return volume
